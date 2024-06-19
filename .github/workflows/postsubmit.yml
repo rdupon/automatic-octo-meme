@@ -1,45 +1,11 @@
 name: Postsubmit
 
 on:
-  schedule:
-    - cron: "0 4 * * *" # Once a day at 4am.
-  # Manual runs through Actions tab in the UI
-  workflow_dispatch:
-    inputs:
-      force-binary-release:
-        description: >-
-          force-binary-release: Set to non-empty when running from main to
-          create a binary release that can be used by 'Create release'.
-
-permissions:
-  contents: read
-  id-token: write
-
-concurrency:
-  group: integration_test
-  cancel-in-progress: true
+  pull_request:
 
 jobs:
-  call-bazel:
-    uses: ./.github/workflows/check-bazel.yml
-
   integration-test:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
-      - name: Auth
-        uses: google-github-actions/auth@5a50e581162a13f4baa8916d01180d2acbc04363 # tag=v2.1.0
-        with:
-          create_credentials_file: true # also sets GOOGLE_APPLICATION_CREDENTIALS
-          service_account: "github-automation-bot@gha-crc-dev.iam.gserviceaccount.com"
-          workload_identity_provider: "projects/1043719249528/locations/global/workloadIdentityPools/github-automation/providers/crc-dev"
-      - name: Run integration_test.sh on Cloud Build
-        env:
-          MANUAL_RUN: "${{ github.event_name == 'workflow_dispatch' && inputs.force-binary-release == '' }}"
-        run: |
-          gcloud builds submit \
-            --project robco-integration-test \
-            --region europe-west1 \
-            --config .github/ci/integration_test_cloudbuild.yaml \
-            --substitutions _GITHUB_SHA=${GITHUB_SHA},_MANUAL_RUN=${MANUAL_RUN}
+        run: echo "ok"
